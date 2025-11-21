@@ -1,65 +1,154 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState } from "react";
+import { motion } from "framer-motion";
+
+export default function Page() {
+  const [start, setStart] = useState(false);
+  const [nickname, setNickname] = useState("");
+  const [text, setText] = useState("");
+  const [file, setFile] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+
+    if (!text && !file) {
+      setMessage("Please paste text or upload a screenshot.");
+      return;
+    }
+
+    setLoading(true);
+    setMessage("");
+
+    try {
+      const form = new FormData();
+      form.append("nickname", nickname);
+      form.append("text", text);
+      if (file) form.append("file", file);
+
+      const res = await fetch("/api/submit", {
+        method: "POST",
+        body: form,
+      });
+
+      const j = await res.json();
+
+      if (res.ok) {
+        window.location.href = `/analysis?result=${encodeURIComponent(j.analysis)}`;
+      } else {
+        setMessage(j.error || "Something went wrong.");
+      }
+    } catch (err) {
+      console.error(err);
+      setMessage("Network error.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.js file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="min-h-screen bg-gradient-to-b from-[#f8f7ff] to-[#ece9ff] flex items-center justify-center p-6">
+      <motion.div
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-md bg-white/60 backdrop-blur-xl rounded-3xl shadow-lg border border-white/40 p-6"
+      >
+        {/* TITLE */}
+        <h1 className="text-3xl font-extrabold text-center mb-2 text-[#4b3cbf]">
+          AI Chat Analysis
+        </h1>
+
+        {/* FUNNY WELCOME LINE */}
+        {!start && (
+          <p className="text-center text-sm text-[#6b5cd4] mb-6">
+            Upload your chats… I promise I won’t judge. <br />
+            (Okay maybe a little.)
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        )}
+
+        {/* CONTINUE BUTTON */}
+        {!start ? (
+          <button
+            onClick={() => setStart(true)}
+            className="w-full bg-[#6b5cd4] hover:bg-[#5a4ac0] text-white py-3 rounded-xl text-lg"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+            Continue
+          </button>
+        ) : (
+          // FORM SECTION
+          <form onSubmit={handleSubmit} className="space-y-4">
+
+            {/* Nickname */}
+            <div>
+              <label className="text-sm font-semibold text-[#4b3cbf]">
+                Nickname (optional)
+              </label>
+              <input
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value)}
+                className="w-full p-3 border rounded-xl border-[#d4cfff] text-[#4b3cbf] placeholder-[#b9a8ff] focus:ring-2 focus:ring-[#6b5cd4]/40 mt-2"
+                placeholder="e.g. A"
+              />
+            </div>
+
+            {/* Chat Text */}
+            <div>
+              <label className="text-sm font-semibold text-[#4b3cbf]">
+                Paste Chat Text
+              </label>
+              <textarea
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                className="w-full p-3 border rounded-xl border-[#d4cfff] text-[#4b3cbf] placeholder-[#b9a8ff] focus:ring-2 focus:ring-[#6b5cd4]/40 mt-2 min-h-[120px]"
+                placeholder="Paste chat here..."
+              />
+            </div>
+
+            {/* Custom Upload Button */}
+            <div>
+              <label className="text-sm font-semibold text-[#4b3cbf]">
+                Upload Screenshot
+              </label>
+
+              <label
+                htmlFor="fileUpload"
+                className="mt-3 flex items-center justify-center w-full bg-[#6b5cd4] hover:bg-[#5a4ac0] text-white py-3 rounded-xl text-sm cursor-pointer transition"
+              >
+                {file ? "Change File" : "Choose File"}
+              </label>
+
+              <input
+                id="fileUpload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => setFile(e.target.files[0])}
+              />
+
+              {file && (
+                <p className="text-xs text-[#4b3cbf] mt-2 text-center">
+                  Selected: {file.name}
+                </p>
+              )}
+            </div>
+
+            {/* SUBMIT BUTTON */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-[#48c78e] hover:bg-[#3fb27e] text-white py-3 rounded-xl text-lg"
+            >
+              {loading ? "Analyzing..." : "Submit for Analysis"}
+            </button>
+          </form>
+        )}
+
+        {message && (
+          <p className="mt-4 text-center text-sm text-[#4b3cbf]">{message}</p>
+        )}
+      </motion.div>
     </div>
   );
 }
