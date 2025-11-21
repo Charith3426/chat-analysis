@@ -23,4 +23,19 @@ Analyze screenshots or text chats with Gemini AI — but in **funny, chaotic Gen
 ---
 
 ## 🎭 Example Output Style
+Vibe check:
+Babes… this chat is SCREAMING “so what are we??” energy 😭🔥
+
+What’s really going on:
+They LIKE like you, and their brain is already planning weddings in the Notes app 😌
+
+Flags:
+Green: Communicating like a rare Pokémon
+Red: Emotional jump scare out of nowhere babe 💀
+
+Comeback options:
+• “I like where this is going 👀 what about you?”
+• “Chill FBI 😭 I like you too.”
+• “Lowkey think we’d be iconic 😌💅”
+
 
